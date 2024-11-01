@@ -20,6 +20,9 @@ using DunGen;
 using LethalNetworkAPI.Utils;
 using System.Data;
 using LC_API.GameInterfaceAPI.Events.EventArgs.Player;
+using System.IO;
+using System.Reflection;
+using LethalLib.Modules;
 
 namespace LethalMurder
 {
@@ -87,6 +90,8 @@ namespace LethalMurder
         internal List<FPlayer> playerList = new List<FPlayer>(); 
         internal int impostorCount = 0;
         internal int crewMateCount = 0;
+
+        
         
 
 
@@ -565,6 +570,30 @@ namespace LethalMurder
         }
 
         #endregion
+
+        public void SpawnButton()
+        {
+            
+           
+            //print a bool is null for every testbuttons
+            
+            
+
+            UnityEngine.Debug.Log("creating testButton");
+            UnityEngine.Debug.Log("player pos is " + LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.transform.position); 
+
+            voteManager.VoteButtonCreation();
+
+            //LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(MyTestButton);
+            
+            
+            //buttonInstance.GetComponent<NetworkObject>().Spawn();
+            
+            //NetworkManager.Instantiate()
+      
+
+
+        }
 
 
         #region oldStuff

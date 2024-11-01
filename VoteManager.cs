@@ -1,7 +1,9 @@
 ﻿using LethalNetworkAPI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -11,11 +13,15 @@ namespace LethalMurder
     internal class VoteManager : MonoBehaviour
     {
         internal LNetworkMessage<int> voteCallMessage; 
+        internal LNetworkMessage<Vector3> ButtonCreationMessage;
+
+        public static AssetBundle voteButtonBundle;
 
 
         void Awake()
         {
            voteCallMessage = LNetworkMessage<int>.Create("VoteCall");
+           ButtonCreationMessage = LNetworkMessage<Vector3>.Create("ButtonCreation");
         }
 
 
@@ -25,12 +31,20 @@ namespace LethalMurder
             voteCallMessage.OnServerReceived += VoteCallServerReceived;
             voteCallMessage.OnClientReceived += VoteCallClientReceived;
 
+            ButtonCreationMessage.OnServerReceived += VoteButtonCreationServerReceived;
+            ButtonCreationMessage.OnClientReceived += VoteButtonCreationClientReceived;
+
+
         }
 
         void OnDisable()
         {
             voteCallMessage.OnServerReceived -= VoteCallServerReceived;
             voteCallMessage.OnClientReceived -= VoteCallClientReceived;
+
+            ButtonCreationMessage.OnServerReceived -= VoteButtonCreationServerReceived;
+            ButtonCreationMessage.OnClientReceived -= VoteButtonCreationClientReceived;
+
         }
 
         internal void VoteCall()
@@ -54,6 +68,47 @@ namespace LethalMurder
         void VoteCallClientReceived(int message)
         {
             UnityEngine.Debug.Log("message received : " + message);
+        }
+
+
+        internal void VoteButtonCreation()
+        {
+
+            Vector3 pos = LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.transform.position + LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.transform.forward * 15;
+
+            if (LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.IsHost)
+            {
+                VoteButtonCreationServerReceived(pos, LC_API.GameInterfaceAPI.Features.Player.HostPlayer.ClientId);
+            }
+            else
+            {
+                ButtonCreationMessage.SendServer(pos);
+            }
+
+
+        }
+        void VoteButtonCreationServerReceived(Vector3 message, ulong clientID)
+        {
+            ButtonCreationMessage.SendClients(message);
+        }
+
+        void VoteButtonCreationClientReceived(Vector3 message)
+        {
+
+            if (voteButtonBundle == null)
+            {
+                string assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                UnityEngine.Debug.Log(Path.Combine(assemblyLocation, "modassets"));
+
+                voteButtonBundle = AssetBundle.LoadFromFile(Path.Combine(assemblyLocation, "modassets"));
+            }
+
+            GameObject MyTestButton = voteButtonBundle.LoadAsset<GameObject>("Button_Asset");
+
+            GameObject buttonInstance = UnityEngine.GameObject.Instantiate(MyTestButton, message, Quaternion.identity);
+
+            
+            
         }
 
 

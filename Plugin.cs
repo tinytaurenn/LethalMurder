@@ -16,6 +16,7 @@ namespace LethalMurder;
 
 [BepInDependency("LethalNetworkAPI")]
 [BepInDependency("LC_API_V50")]
+[BepInDependency("evaisa.lethallib")]
 [BepInPlugin(GUID, NAME, VERSION)]
 public class Plugin : BaseUnityPlugin
 {

@@ -77,7 +77,9 @@ namespace LethalMurder
         {
 
 
-            Plugin.Instance.modManager.voteManager.VoteCall(); 
+            Plugin.Instance.modManager.voteManager.VoteCall();
+
+            Plugin.Instance.modManager.SpawnButton(); 
 
             //find swithc light script
 
