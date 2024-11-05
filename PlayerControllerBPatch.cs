@@ -17,6 +17,7 @@ using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.InputSystem.HID;
 using UnityEngine.UIElements;
+using static UnityEngine.SendMouseEvents;
 
 
 namespace LethalMurder
@@ -116,10 +117,11 @@ namespace LethalMurder
             if (!__instance.isGrabbingObjectAnimation && !__instance.inSpecialMenu && !__instance.quickMenuManager.isMenuOpen)
             {
 
-                int playerMask = 8;
+                //int playerMask = 8;
                 Ray hitRay = new Ray(__instance.gameplayCamera.transform.position, __instance.gameplayCamera.transform.forward);
                 RaycastHit[] hitInfos;
-                hitInfos = Physics.RaycastAll(hitRay, __instance.grabDistance,playerMask);
+                hitInfos = Physics.RaycastAll(hitRay, __instance.grabDistance);
+                bool buttonFound = false;
                 foreach (RaycastHit hit in hitInfos)
                 {
                     if (hit.collider.gameObject.CompareTag("Player")
@@ -128,7 +130,7 @@ namespace LethalMurder
                         && hit.collider.GetComponent<PlayerControllerB>().GetClientId() != __instance.GetClientId()
                         && Plugin.Instance.modManager.m_Role == ModManager.ERoles.Impostor)
                     {
-
+                        //text for killer
                         if(Plugin.Instance.modManager.canInstantKill)
                         {
                             //ulong targetClientID = hit.collider.GetComponent<PlayerControllerB>().GetClientId();
@@ -149,35 +151,25 @@ namespace LethalMurder
                             
                         }
                         break;
-
-                    }
-                }
-
-                
-                Ray simpleRay = new Ray(__instance.gameplayCamera.transform.position, __instance.gameplayCamera.transform.forward);
-                
-                //Physics.Raycast(simpleRay, out RaycastHit hitInfo, __instance.grabDistance);
-
-                RaycastHit[] newHitInfos;
-                newHitInfos = Physics.RaycastAll(simpleRay, __instance.grabDistance);
-
-                bool buttonFound = false;
-                foreach (RaycastHit hitInfo in newHitInfos)
-                {
-                    if (hitInfo.collider != null && hitInfo.collider.TryGetComponent<ButtonBehavior>(out ButtonBehavior buttonBehavior))
+                    }//text over button 
+                    else if (hit.collider != null && hit.collider.TryGetComponent<ButtonBehavior>(out ButtonBehavior buttonBehavior))
                     {
                         __instance.cursorIcon.enabled = true;
                         __instance.cursorIcon.sprite = __instance.grabItemIcon;
                         __instance.cursorTip.text = "Call for a reunion";
-                        buttonFound = true; 
-                        break; 
+                        buttonFound = true;
+                        break;
                     }
                 }
 
-                if(Plugin.Instance.modManager.voteManager.buttonFound != buttonFound)
+                if (Plugin.Instance.modManager.voteManager.buttonFound != buttonFound)
                 {
-                    Plugin.Instance.modManager.voteManager.buttonFound = buttonFound;  
+                    Plugin.Instance.modManager.voteManager.buttonFound = buttonFound;
                 }
+
+
+
+                
 
 
 
