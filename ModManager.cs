@@ -91,6 +91,10 @@ namespace LethalMurder
         internal int impostorCount = 0;
         internal int crewMateCount = 0;
 
+        //sync
+
+        internal ModSync syncManager;   
+
         
         
 
@@ -113,6 +117,8 @@ namespace LethalMurder
             SpawnEnemyOnPlayerPositionMessage = LNetworkMessage<Vector3>.Create("SpawnEnemyOnPlayerPositionMessage");
 
             CreatingVoteManager();
+            
+
 
         }
 
@@ -183,9 +189,15 @@ namespace LethalMurder
         {
             isRoleReceived = false;
             UnityEngine.Debug.Log("LandOnMoonEvent");
-            canShipLever = false; 
+            canShipLever = false;
 
-            if (LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.IsHost) CreatingRoles();//host only
+            if (!LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.IsHost) return;
+
+            //host only
+
+            CreatingRoles();
+
+            SpawnButton();
 
 
         }
@@ -303,6 +315,9 @@ namespace LethalMurder
             voteManagerObject.hideFlags = (HideFlags)61;
             voteManager = voteManagerObject.AddComponent<VoteManager>(); ;
         }
+
+        //maybe destroy
+        
 
         #endregion
 

@@ -77,9 +77,11 @@ namespace LethalMurder
         {
 
 
-            Plugin.Instance.modManager.voteManager.VoteCall();
+            //Plugin.Instance.modManager.voteManager.VoteCall();
 
-            Plugin.Instance.modManager.SpawnButton(); 
+            
+
+             
 
             //find swithc light script
 
@@ -93,6 +95,11 @@ namespace LethalMurder
             else
             {
                 //UnityEngine.Debug.Log("You can't kill");
+            }
+
+            if(Plugin.Instance.modManager.voteManager.buttonFound)
+            {
+                Plugin.Instance.modManager.voteManager.VoteCall();
             }
 
             
@@ -145,6 +152,37 @@ namespace LethalMurder
 
                     }
                 }
+
+                
+                Ray simpleRay = new Ray(__instance.gameplayCamera.transform.position, __instance.gameplayCamera.transform.forward);
+                
+                //Physics.Raycast(simpleRay, out RaycastHit hitInfo, __instance.grabDistance);
+
+                RaycastHit[] newHitInfos;
+                newHitInfos = Physics.RaycastAll(simpleRay, __instance.grabDistance);
+
+                bool buttonFound = false;
+                foreach (RaycastHit hitInfo in newHitInfos)
+                {
+                    if (hitInfo.collider != null && hitInfo.collider.TryGetComponent<ButtonBehavior>(out ButtonBehavior buttonBehavior))
+                    {
+                        __instance.cursorIcon.enabled = true;
+                        __instance.cursorIcon.sprite = __instance.grabItemIcon;
+                        __instance.cursorTip.text = "Call for a reunion";
+                        buttonFound = true; 
+                        break; 
+                    }
+                }
+
+                if(Plugin.Instance.modManager.voteManager.buttonFound != buttonFound)
+                {
+                    Plugin.Instance.modManager.voteManager.buttonFound = buttonFound;  
+                }
+
+
+
+
+
             }
 
             

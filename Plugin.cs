@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 
 
@@ -61,10 +62,13 @@ public class Plugin : BaseUnityPlugin
         m_Harmony.PatchAll(typeof(BugPatch));
         m_Harmony.PatchAll(typeof(HauntedMaskPatch));
         m_Harmony.PatchAll(typeof(HUDManagerPatch));
+        m_Harmony.PatchAll(typeof(ModSync));
 
 
 
         Task.Delay(10).ContinueWith(t => { CreateModManager(); }); 
+        
+        
     }
 
     public void LogMessage(string message)

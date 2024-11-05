@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 namespace LethalMurder
@@ -16,6 +18,8 @@ namespace LethalMurder
         internal LNetworkMessage<Vector3> ButtonCreationMessage;
 
         public static AssetBundle voteButtonBundle;
+
+        internal bool buttonFound = false;
 
 
         void Awake()
@@ -76,6 +80,11 @@ namespace LethalMurder
 
             Vector3 pos = LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.transform.position + LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.transform.forward * 15;
 
+            //pos = StartOfRound.Instance.shipDoorNode.transform.position; 
+            pos = StartOfRound.Instance.shipBounds.transform.position
+                + (-StartOfRound.Instance.shipBounds.transform.right * 20)
+                + (Vector3.down * 10); 
+
             if (LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.IsHost)
             {
                 VoteButtonCreationServerReceived(pos, LC_API.GameInterfaceAPI.Features.Player.HostPlayer.ClientId);
@@ -103,9 +112,14 @@ namespace LethalMurder
                 voteButtonBundle = AssetBundle.LoadFromFile(Path.Combine(assemblyLocation, "modassets"));
             }
 
-            GameObject MyTestButton = voteButtonBundle.LoadAsset<GameObject>("Button_Asset");
+            GameObject MyTestButton = voteButtonBundle.LoadAsset<GameObject>("Button");
+            
 
             GameObject buttonInstance = UnityEngine.GameObject.Instantiate(MyTestButton, message, Quaternion.identity);
+           
+            buttonInstance.AddComponent<ButtonBehavior>();
+
+            //need sync on clients connections 
 
             
             
