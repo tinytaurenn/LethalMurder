@@ -14,17 +14,21 @@ namespace LethalMurder
 {
     internal class VoteManager : MonoBehaviour
     {
-        internal LNetworkMessage<int> voteCallMessage; 
+        internal LNetworkMessage<Vector3> voteCallMessage; 
         internal LNetworkMessage<Vector3> ButtonCreationMessage;
 
         public static AssetBundle voteButtonBundle;
 
+        internal VotePositions VotePositions; 
+
         internal bool buttonFound = false;
+
+        internal bool inVoteMode = false; 
 
 
         void Awake()
         {
-           voteCallMessage = LNetworkMessage<int>.Create("VoteCall");
+           voteCallMessage = LNetworkMessage<Vector3>.Create("VoteCall");
            ButtonCreationMessage = LNetworkMessage<Vector3>.Create("ButtonCreation");
         }
 
@@ -55,23 +59,39 @@ namespace LethalMurder
         {
             if(LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.IsHost)
             {
-                VoteCallServerReceived(1, LC_API.GameInterfaceAPI.Features.Player.HostPlayer.ClientId); 
+                VoteCallServerReceived(Vector3.zero, LC_API.GameInterfaceAPI.Features.Player.HostPlayer.ClientId); 
             }
             else
             {
-                voteCallMessage.SendServer(1);
+                voteCallMessage.SendServer(Vector3.zero);
             }
 
         }
 
-        void VoteCallServerReceived(int message, ulong clientID)
+        void VoteCallServerReceived(Vector3 message, ulong clientID)
         {
-            voteCallMessage.SendClients(1);
+
+            UnityEngine.Debug.Log("message received : " + message);
+            
+            if (VotePositions == null) return;
+
+            VotePositions.ClearChairs(); 
+            foreach(ModManager.FPlayer client in Plugin.Instance.modManager.playerList)
+            {
+                VotePositions.FVotePosition FPos;
+                VotePositions.FindEmptyChair(out FPos);
+                Vector3 pos = FPos.transform.position;
+
+
+                voteCallMessage.SendClient(pos, client.playerID);
+            }
         }
 
-        void VoteCallClientReceived(int message)
+        void VoteCallClientReceived(Vector3 pos)
         {
-            UnityEngine.Debug.Log("message received : " + message);
+            LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.disableMoveInput = true;
+            LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.PlayerController.TeleportPlayer(pos + Vector3.up * 5);
+            inVoteMode = true; 
         }
 
 
@@ -113,16 +133,25 @@ namespace LethalMurder
             }
 
             GameObject MyTestButton = voteButtonBundle.LoadAsset<GameObject>("Button");
+            GameObject MyVoteRoom = voteButtonBundle.LoadAsset<GameObject>("VoteRoom");
+            GameObject MyVotePositions = voteButtonBundle.LoadAsset<GameObject>("VotePositions");
             
 
             GameObject buttonInstance = UnityEngine.GameObject.Instantiate(MyTestButton, message, Quaternion.identity);
            
             buttonInstance.AddComponent<ButtonBehavior>();
 
+            UnityEngine.GameObject.Instantiate(MyVoteRoom, message + Vector3.up * 100, Quaternion.identity);
+            
+            GameObject votePositions =  UnityEngine.GameObject.Instantiate(MyVotePositions, message + Vector3.up * 100, Quaternion.identity);
+            
+
+            VotePositions = votePositions.AddComponent<VotePositions>();
+
             //need sync on clients connections 
 
-            
-            
+
+
         }
 
 

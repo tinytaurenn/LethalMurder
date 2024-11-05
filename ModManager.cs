@@ -610,6 +610,26 @@ namespace LethalMurder
 
         }
 
+        #region Utility Functions
+
+        // Shuffle a list randomly
+        internal static void ShuffleList<T>(List<T> list)
+        {
+            System.Random rng = new System.Random();
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        #endregion
+
+
 
         #region oldStuff
         //useless

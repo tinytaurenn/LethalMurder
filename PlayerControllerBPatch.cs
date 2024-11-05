@@ -87,7 +87,8 @@ namespace LethalMurder
             //find swithc light script
 
 
-            if (Plugin.Instance.modManager.canInstantKill == true)
+            if (Plugin.Instance.modManager.canInstantKill == true
+                && Plugin.Instance.modManager.voteManager.inVoteMode == false)
             {
                 //Plugin.Instance.modManager.ServerInfoMessage.SendServer("toz"); //works very well
                 Plugin.Instance.modManager.TryKillMessage.SendServer(___actualClientId);
@@ -128,7 +129,8 @@ namespace LethalMurder
                     && hit.collider.GetComponent<PlayerControllerB>() != null
                         && hit.collider.GetComponent<PlayerControllerB>().isPlayerControlled
                         && hit.collider.GetComponent<PlayerControllerB>().GetClientId() != __instance.GetClientId()
-                        && Plugin.Instance.modManager.m_Role == ModManager.ERoles.Impostor)
+                        && Plugin.Instance.modManager.m_Role == ModManager.ERoles.Impostor
+                        && Plugin.Instance.modManager.voteManager.inVoteMode == false)
                     {
                         //text for killer
                         if(Plugin.Instance.modManager.canInstantKill)
@@ -166,6 +168,8 @@ namespace LethalMurder
                 {
                     Plugin.Instance.modManager.voteManager.buttonFound = buttonFound;
                 }
+
+               
 
 
 
