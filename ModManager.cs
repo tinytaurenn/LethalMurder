@@ -69,6 +69,7 @@ namespace LethalMurder
         internal bool canInstantKill = false;
         internal float killCooldown = 30f; // set to 120 normally
         internal float killCoolDownTime = 0f;
+        internal Coroutine KillRoutine; 
 
         internal LethalClientMessage<ulong> CloseKillMessage; // client to all clients : nice but nothing works on serv
         internal LNetworkMessage<ulong> TryKillMessage; 
@@ -151,6 +152,8 @@ namespace LethalMurder
             LC_API.GameInterfaceAPI.GameState.LandOnMoon += LandOnMoonEvent;
             LC_API.GameInterfaceAPI.GameState.ShipStartedLeaving += ShipLeavingEvent; 
 
+            
+
             LC_API.GameInterfaceAPI.Events.Handlers.Player.Died += OnPlayerDied;
 
         }
@@ -179,6 +182,8 @@ namespace LethalMurder
 
             LC_API.GameInterfaceAPI.GameState.LandOnMoon -= LandOnMoonEvent;
 
+            LC_API.GameInterfaceAPI.GameState.ShipStartedLeaving -= ShipLeavingEvent;
+
             LC_API.GameInterfaceAPI.Events.Handlers.Player.Died -= OnPlayerDied;
             PlayerDiedMessage.OnServerReceived -= OnPlayerDeathServer;
         }
@@ -204,8 +209,13 @@ namespace LethalMurder
 
         private void ShipLeavingEvent()
         {
-            StopAllCoroutines(); 
+            StopAllCoroutines();
+            voteManager.StopAllCoroutines(); 
+
             canInstantKill = false; 
+            voteManager.canCallVote = false;
+            voteManager.DestroyAllVoteObjects();
+
         }
 
         void UpdatingPlayerScripts()
@@ -222,6 +232,21 @@ namespace LethalMurder
 
             }
 
+        }
+
+        internal bool GetPlayerByID(ulong id,out FPlayer player)
+        {
+            foreach(FPlayer p in playerList)
+            {
+                if(p.playerID == id)
+                {
+                    player = p;
+                    return true; 
+                }
+            }
+
+            player = new FPlayer();
+            return false; 
         }
 
 
@@ -461,15 +486,26 @@ namespace LethalMurder
         {
             UnityEngine.Debug.Log("Client Received Try Kill Message " + param);
             //((ulong)RoundManager.Instance.playersManager.thisClientPlayerId).GetPlayerController().KillPlayer(Vector3.one * 5.0f);
-            LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.Kill(Vector3.one * 5.0f);
+            if(Plugin.Instance.modManager.voteManager != null)
+            {
+                float force = Plugin.Instance.modManager.voteManager.inVoteMode ? 1.0f : 5.0f;
+                LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.Kill(Vector3.one * force);
+            }
+            else
+            {
+               
+                LC_API.GameInterfaceAPI.Features.Player.LocalPlayer.Kill(Vector3.one * 5.0f);
+            }
+            
 
 
         }
 
         internal void RunKillCooldown(float time)
         {
+            if(KillRoutine != null) StopCoroutine(KillRoutine);
             canInstantKill = false;
-            StartCoroutine(KillCooldownWithTimer(time));
+            KillRoutine =  StartCoroutine(KillCooldownWithTimer(time));
         }
 
         //deprecated

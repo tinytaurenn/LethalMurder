@@ -60,9 +60,13 @@ namespace LethalMurder
                     return false;
                 }
 
+                if(!Plugin.Instance.modManager.voteManager.inVoteMode)
+                {
+                    if (UnityEngine.Random.Range(0f, 1f) > 0.5f) Plugin.Instance.modManager.CustomSpawnEnemy();
+                    //spawn random enemy on impostor death 
+                }
 
-                if (UnityEngine.Random.Range(0f, 1f) > 0.5f) Plugin.Instance.modManager.CustomSpawnEnemy();
-                //spawn random enemy on impostor death 
+
 
 
             }
@@ -78,15 +82,44 @@ namespace LethalMurder
         {
 
 
-            //Plugin.Instance.modManager.voteManager.VoteCall();
 
-            
 
-             
 
             //find swithc light script
 
+            if (Plugin.Instance.modManager.voteManager.inVoteMode)
+            {
 
+                InteractPerformedVoteMode(___actualClientId, __instance);
+
+            }
+            else
+            {
+                InteractPerformedPlayMode(___actualClientId, __instance);
+            }
+
+
+
+
+
+        }
+
+        static void InteractPerformedVoteMode(ulong ___actualClientId, PlayerControllerB __instance)
+        {
+            if (Plugin.Instance.modManager.voteManager.canVote)
+            {
+                Plugin.Instance.modManager.voteManager.VotePlayer();
+            }
+            else
+            {
+                UnityEngine.Debug.Log("you can't vote now"); 
+            }
+            
+
+        }
+
+        static void InteractPerformedPlayMode(ulong ___actualClientId, PlayerControllerB __instance)
+        {
             if (Plugin.Instance.modManager.canInstantKill == true
                 && Plugin.Instance.modManager.voteManager.inVoteMode == false)
             {
@@ -99,22 +132,63 @@ namespace LethalMurder
                 //UnityEngine.Debug.Log("You can't kill");
             }
 
-            if(Plugin.Instance.modManager.voteManager.buttonFound)
+            if (Plugin.Instance.modManager.voteManager.buttonFound && Plugin.Instance.modManager.voteManager.canCallVote)
             {
                 Plugin.Instance.modManager.voteManager.VoteCall();
             }
-
-            
-           
-          
         }
+
+
         [HarmonyPatch("SetHoverTipAndCurrentInteractTrigger")]
         [HarmonyPostfix]
         static void InteractTriggerPatch(PlayerControllerB __instance)
         {
-            
+
             
 
+            if (Plugin.Instance.modManager.voteManager.inVoteMode)
+            {
+
+                TipHoverVoteMode(__instance);
+
+            }
+            else
+            {
+                TipHoverPlayMode(__instance);
+            }
+
+            
+        }
+
+        static void TipHoverVoteMode(PlayerControllerB __instance)
+        {
+            if (!__instance.isGrabbingObjectAnimation && !__instance.inSpecialMenu && !__instance.quickMenuManager.isMenuOpen)
+            {
+
+                Ray hitRay = new Ray(__instance.gameplayCamera.transform.position, __instance.gameplayCamera.transform.forward);
+                RaycastHit[] hitInfos;
+                hitInfos = Physics.RaycastAll(hitRay, __instance.grabDistance * 10,8);
+
+                foreach (RaycastHit hit in hitInfos)
+                {
+                    if (hit.collider.gameObject.CompareTag("Player")
+                    && hit.collider.GetComponent<PlayerControllerB>() != null
+                        && hit.collider.GetComponent<PlayerControllerB>().isPlayerControlled
+                        && hit.collider.GetComponent<PlayerControllerB>().GetClientId() != __instance.GetClientId())
+                    {
+                        //text for killer
+                        __instance.cursorIcon.enabled = true;
+                        __instance.cursorIcon.sprite = __instance.grabItemIcon;
+                        __instance.cursorTip.text = "Vote for " + hit.collider.GetComponent<PlayerControllerB>().playerUsername;
+                        break;
+                    }//text over button 
+
+                }
+            }
+        }
+
+        static void TipHoverPlayMode(PlayerControllerB __instance)
+        {
             if (!__instance.isGrabbingObjectAnimation && !__instance.inSpecialMenu && !__instance.quickMenuManager.isMenuOpen)
             {
 
@@ -129,11 +203,10 @@ namespace LethalMurder
                     && hit.collider.GetComponent<PlayerControllerB>() != null
                         && hit.collider.GetComponent<PlayerControllerB>().isPlayerControlled
                         && hit.collider.GetComponent<PlayerControllerB>().GetClientId() != __instance.GetClientId()
-                        && Plugin.Instance.modManager.m_Role == ModManager.ERoles.Impostor
-                        && Plugin.Instance.modManager.voteManager.inVoteMode == false)
+                        && Plugin.Instance.modManager.m_Role == ModManager.ERoles.Impostor)
                     {
                         //text for killer
-                        if(Plugin.Instance.modManager.canInstantKill)
+                        if (Plugin.Instance.modManager.canInstantKill)
                         {
                             //ulong targetClientID = hit.collider.GetComponent<PlayerControllerB>().GetClientId();
                             __instance.cursorIcon.enabled = true;
@@ -146,21 +219,34 @@ namespace LethalMurder
                         else
                         {
 
-                            int killTime = (int)(Plugin.Instance.modManager.killCooldown - Plugin.Instance.modManager.killCoolDownTime); 
+                            int killTime = (int)(Plugin.Instance.modManager.killCooldown - Plugin.Instance.modManager.killCoolDownTime);
                             __instance.cursorTip.text = "You can kill in : " + killTime;
 
                             //UnityEngine.Debug.Log("show kill player possibility");
-                            
+
                         }
                         break;
                     }//text over button 
                     else if (hit.collider != null && hit.collider.TryGetComponent<ButtonBehavior>(out ButtonBehavior buttonBehavior))
                     {
-                        __instance.cursorIcon.enabled = true;
-                        __instance.cursorIcon.sprite = __instance.grabItemIcon;
-                        __instance.cursorTip.text = "Call for a reunion";
-                        buttonFound = true;
-                        break;
+
+                        if (Plugin.Instance.modManager.voteManager.canCallVote)
+                        {
+                            __instance.cursorIcon.enabled = true;
+                            __instance.cursorIcon.sprite = __instance.grabItemIcon;
+                            __instance.cursorTip.text = "Call for a reunion";
+                            buttonFound = true;
+                            break;
+                        }
+                        else
+                        {
+                            int voteCallTime = (int)(Plugin.Instance.modManager.voteManager.voteCoolDown - Plugin.Instance.modManager.voteManager.voteCoolDownTime);
+                            __instance.cursorTip.text = "Reunion can be called in : " + voteCallTime;
+                            buttonFound = true;
+                            break;
+                        }
+
+                        
                     }
                 }
 
@@ -168,20 +254,7 @@ namespace LethalMurder
                 {
                     Plugin.Instance.modManager.voteManager.buttonFound = buttonFound;
                 }
-
-               
-
-
-
-                
-
-
-
-
-
             }
-
-            
         }
 
        

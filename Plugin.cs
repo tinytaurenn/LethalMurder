@@ -63,6 +63,7 @@ public class Plugin : BaseUnityPlugin
         m_Harmony.PatchAll(typeof(HauntedMaskPatch));
         m_Harmony.PatchAll(typeof(HUDManagerPatch));
         m_Harmony.PatchAll(typeof(ModSync));
+        m_Harmony.PatchAll(typeof(StartOfRoundPatch));
 
 
 

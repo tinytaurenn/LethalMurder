@@ -32,6 +32,7 @@ namespace LethalMurder
         }
 
         List<FVotePosition> positionsList = new List<FVotePosition>();
+        internal Vector3 PositionBeforeVote; 
 
         void Awake()
         {

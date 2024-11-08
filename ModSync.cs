@@ -30,6 +30,21 @@ namespace LethalMurder
 
 
         }
+        [HarmonyPatch("Disconnect")]
+        [HarmonyPostfix]
+        static void DisconnectPatch()
+        {
+            UnityEngine.Debug.Log("Disconnecting, stoping routines and etc");
+            if (Plugin.Instance.modManager.KillRoutine != null)
+            {
+                Plugin.Instance.modManager.StopCoroutine(Plugin.Instance.modManager.KillRoutine);
+            }
+            if(Plugin.Instance.modManager.voteManager.VoteTimeRoutine != null)
+            {
+                Plugin.Instance.modManager.StopCoroutine(Plugin.Instance.modManager.voteManager.VoteTimeRoutine);
+            }
+
+        }
 
         
     }
