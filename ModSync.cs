@@ -26,6 +26,8 @@ namespace LethalMurder
 
             UnityEngine.Debug.Log("AYAYA a player connected : " + clientId.GetPlayerController().playerUsername);
 
+            Plugin.Instance.modManager.syncParametersMessage_1.SendClient(Plugin.Instance.modManager.syncParameters_1, clientId); 
+
             //syncing objects
 
 
@@ -43,6 +45,18 @@ namespace LethalMurder
             {
                 Plugin.Instance.modManager.StopCoroutine(Plugin.Instance.modManager.voteManager.VoteTimeRoutine);
             }
+
+            Plugin.Instance.modManager.voteManager.DestroyAllVoteObjects();
+            Plugin.Instance.modManager.voteManager.inVoteMode = false;
+            Plugin.Instance.modManager.canInstantKill = false;
+            Plugin.Instance.modManager.canShipLever = true;
+            Plugin.Instance.modManager.voteManager.canCallVote = false; 
+
+            
+            
+
+            //Plugin.CreateModManager(); 
+            
 
         }
 

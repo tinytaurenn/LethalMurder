@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using JetBrains.Annotations;
@@ -24,7 +25,7 @@ public class Plugin : BaseUnityPlugin
 
     const string GUID = "TinyTaurenMurder";
     const string NAME = "TinyTaurenMurder";
-    const string VERSION = "1.1.0";
+    const string VERSION = "2.2.3";
 
     private Harmony m_Harmony = new Harmony(GUID);
 
@@ -37,6 +38,8 @@ public class Plugin : BaseUnityPlugin
 
     internal ModManager modManager;
 
+    internal static ModConfig Config { get; private set; } = null!; 
+
 
     private void Awake()
     {
@@ -48,6 +51,8 @@ public class Plugin : BaseUnityPlugin
         {
             Destroy(this.gameObject);
         }
+
+        Config = new ModConfig(base.Config);
 
         // Plugin startup logic
         Logger = base.Logger;
@@ -64,6 +69,7 @@ public class Plugin : BaseUnityPlugin
         m_Harmony.PatchAll(typeof(HUDManagerPatch));
         m_Harmony.PatchAll(typeof(ModSync));
         m_Harmony.PatchAll(typeof(StartOfRoundPatch));
+        m_Harmony.PatchAll(typeof(ModConfig));
 
 
 

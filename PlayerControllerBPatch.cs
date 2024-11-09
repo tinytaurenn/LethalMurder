@@ -144,8 +144,8 @@ namespace LethalMurder
         static void InteractTriggerPatch(PlayerControllerB __instance)
         {
 
+            if (Plugin.Instance.modManager == null || Plugin.Instance.modManager.voteManager == null) return; 
             
-
             if (Plugin.Instance.modManager.voteManager.inVoteMode)
             {
 
@@ -257,9 +257,18 @@ namespace LethalMurder
             }
         }
 
-       
+        [HarmonyPostfix]
+        [HarmonyPatch("ConnectClientToPlayerObject")]
+        public static void InitializeLocalPlayer()
+        {
+            if (NetworkManager.Singleton.IsHost) return; 
+
+            Plugin.Instance.modManager.syncParametersMessage_1.SendServer(Plugin.Instance.modManager.syncParameters_1);
+        }
 
 
-       
+
+
+
     }
 }

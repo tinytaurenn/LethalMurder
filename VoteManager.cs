@@ -53,8 +53,8 @@ namespace LethalMurder
         internal TMP_Text VoteTimer;
         internal Coroutine VoteTimeRoutine; 
 
-        float VoteTime = 30.0f;
-        float ShortVoteTime = 7.0f;
+        internal float VoteTime = 30.0f;
+        internal float ShortVoteTime = 7.0f;
 
         //instantiated objects
         GameObject VoteButtonGO; 
@@ -93,6 +93,8 @@ namespace LethalMurder
            ButtonCreationMessage = LNetworkMessage<Vector3>.Create("ButtonCreation");
            EndVoteMessage = LNetworkMessage<bool>.Create("EndVote");
            VotePlayerMessage = LNetworkMessage<int>.Create("VotePlayer");
+
+            
 
         }
 

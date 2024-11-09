@@ -92,12 +92,14 @@ namespace LethalMurder
         internal int impostorCount = 0;
         internal int crewMateCount = 0;
 
-        //sync
 
-        internal ModSync syncManager;   
+        //sync 
 
         
-        
+
+        internal LNetworkMessage<Color> syncParametersMessage_1; //kill cooldown, vote cooldown, vote time, time after vote
+
+        internal Color syncParameters_1; //kill cooldown, vote cooldown, vote time, time after vote
 
 
         private void Awake()
@@ -118,6 +120,17 @@ namespace LethalMurder
             SpawnEnemyOnPlayerPositionMessage = LNetworkMessage<Vector3>.Create("SpawnEnemyOnPlayerPositionMessage");
 
             CreatingVoteManager();
+            //sync
+
+            syncParametersMessage_1 = LNetworkMessage<Color>.Create("SyncParametersMessage");
+
+            syncParameters_1 = new Color(Plugin.Config.killCooldown.Value,
+                Plugin.Config.voteCallCooldown.Value,
+                Plugin.Config.voteTime.Value,
+                Plugin.Config.timeAfterVote.Value);
+
+            OnClientReceivedSync_1(syncParameters_1); 
+
             
 
 
@@ -156,6 +169,11 @@ namespace LethalMurder
 
             LC_API.GameInterfaceAPI.Events.Handlers.Player.Died += OnPlayerDied;
 
+            //sync
+
+            syncParametersMessage_1.OnClientReceived += OnClientReceivedSync_1; 
+            syncParametersMessage_1.OnServerReceived += OnServerReceivedSync_1; 
+
         }
 
         
@@ -186,6 +204,11 @@ namespace LethalMurder
 
             LC_API.GameInterfaceAPI.Events.Handlers.Player.Died -= OnPlayerDied;
             PlayerDiedMessage.OnServerReceived -= OnPlayerDeathServer;
+
+            //sync
+
+            syncParametersMessage_1.OnClientReceived -= OnClientReceivedSync_1;
+            syncParametersMessage_1.OnServerReceived -= OnServerReceivedSync_1;
         }
 
         #region Main Plugin Functions 
@@ -645,6 +668,35 @@ namespace LethalMurder
 
 
         }
+
+        #region sync
+
+        private void OnClientReceivedSync_1(Color parameters)
+        {
+            UnityEngine.Debug.Log("Client Received Sync Parameters");
+
+            if(voteManager == null)
+            {
+                UnityEngine.Debug.Log("vote manager is null");
+            }
+            killCooldown = parameters.r;
+            voteManager.voteCoolDown = parameters.g;
+            voteManager.VoteTime = parameters.b;
+            voteManager.ShortVoteTime = parameters.a;
+
+            UnityEngine.Debug.Log("Kill Cooldown : " + killCooldown);
+            UnityEngine.Debug.Log("Vote Cooldown : " + voteManager.voteCoolDown);
+            UnityEngine.Debug.Log("Vote Time : " + voteManager.VoteTime);
+            UnityEngine.Debug.Log("Time After Vote : " + voteManager.ShortVoteTime);
+
+
+        }
+
+        void OnServerReceivedSync_1(Color parameters,  ulong clientID)
+        {
+            syncParametersMessage_1.SendClient(syncParameters_1, clientID);
+        }
+        #endregion
 
         #region Utility Functions
 
